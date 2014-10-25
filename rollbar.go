@@ -55,6 +55,12 @@ var (
 	waitGroup   sync.WaitGroup
 )
 
+type Person struct {
+	ID       string `json:"id"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+}
+
 // -- Setup
 
 func init() {
@@ -71,24 +77,25 @@ func init() {
 // -- Error reporting
 
 // Error asynchronously sends an error to Rollbar with the given severity level.
-func Error(level string, err error) {
-	ErrorWithStackSkip(level, err, 1)
+func Error(level string, err error, p Person) {
+	ErrorWithStackSkip(level, err, p, 2)
 }
 
 // RequestError asynchronously sends an error to Rollbar with the given
 // severity level and request-specific information.
 func RequestError(level string, r *http.Request, err error) {
-	RequestErrorWithStackSkip(level, r, err, 1)
+	RequestErrorWithStackSkip(level, r, err, 2)
 }
 
 // ErrorWithStackSkip asynchronously sends an error to Rollbar with the given
 // severity level and a given number of stack trace frames skipped.
-func ErrorWithStackSkip(level string, err error, skip int) {
+func ErrorWithStackSkip(level string, err error, p Person, skip int) {
 	body := buildBody(level, err.Error())
 	data := body["data"].(map[string]interface{})
 	errBody, fingerprint := errorBody(err, skip)
 	data["body"] = errBody
 	data["fingerprint"] = fingerprint
+	data["person"] = p
 
 	push(body)
 }
@@ -113,10 +120,11 @@ func RequestErrorWithStackSkip(level string, r *http.Request, err error, skip in
 
 // Message asynchronously sends a message to Rollbar with the given severity
 // level. Rollbar request is asynchronous.
-func Message(level string, msg string) {
+func Message(level string, msg string, p Person) {
 	body := buildBody(level, msg)
 	data := body["data"].(map[string]interface{})
 	data["body"] = messageBody(msg)
+	data["person"] = p
 
 	push(body)
 }
