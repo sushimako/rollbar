@@ -38,6 +38,8 @@ var (
 	// All errors and messages will be submitted under this environment.
 	Environment = "development"
 
+	Plattform = runtime.GOOS
+
 	// API endpoint for Rollbar.
 	Endpoint = "https://api.rollbar.com/api/1/item/"
 
@@ -139,7 +141,7 @@ func buildBody(level, title string) map[string]interface{} {
 			"title":       title,
 			"level":       level,
 			"timestamp":   timestamp,
-			"platform":    runtime.GOOS,
+			"platform":    Plattform,
 			"language":    "go",
 			"server": map[string]interface{}{
 				"host": hostname,
